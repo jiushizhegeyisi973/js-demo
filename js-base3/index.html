@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<style>
+	.queue li{
+		float: left;
+		list-style: none;
+		padding: 2px 5px;
+		margin: 5px;
+		background-color: red;
+		color: white;
+	}
+	span.select{
+		color: blue;
+		background-color: yellow;
+	}
+</style>
+<body>
+	<div class="content">
+		<!-- <input type="text" class="queueInput"> -->
+		<textarea name="" id="" cols="30" rows="10" class="batchIn"></textarea>
+		<button class="leftIn">左侧入</button>
+		<button class="rightIn">右侧入</button>
+		<button class="leftOut">左侧出</button>
+		<button class="rightOut">右侧出</button>
+		
+		<input type="text" class="searchInput" />
+		<button class="search">查询</button>
+		<ul class="queue">
+			
+		</ul>
+	</div>
+<script type="text/javascript">
+(function() {
+	var queue = [];
+	var btnLeftIn, 	btnRightIn, btnLeftOut, btnRightOut;
+
+	btnLeftIn = document.querySelectorAll('.leftIn')[0];
+	btnLeftIn.addEventListener('click', function() {
+		var value = getValue();
+		if (!validateValue(value)){return};
+		queue = value.concat(queue);
+		clear();
+		render(queue);
+	});
+
+	btnRightIn = document.querySelectorAll('.rightIn')[0];
+	btnRightIn.addEventListener('click', function() {
+		var value = getValue();
+		if (!validateValue(value)){return};
+		queue = queue.concat(value);
+		clear();
+		render(queue);
+	});
+
+	btnLeftOut = document.querySelectorAll('.leftOut')[0];
+	btnLeftOut.addEventListener('click', function() {
+		var value;
+		if (queue.length == 0) {
+			alert('队列以空');
+			return;
+		};
+		value = queue.shift();
+		clear();
+		render(queue);
+		alert(value + '已出站');
+	});
+
+	btnRightOut = document.querySelectorAll('.rightOut')[0];
+	btnRightOut.addEventListener('click', function() {
+		var value;
+		if (queue.length == 0) {
+			alert('队列以空');
+			return;
+		};
+		value = queue.pop();
+		clear();
+		render(queue);
+		alert(value + '已出站');
+	});
+
+	btnSearch =  document.querySelectorAll('.search')[0];
+	btnSearch.addEventListener('click', function() {
+		var value = trim(document.querySelectorAll('.searchInput')[0].value),
+			temp = [];
+		if (value.length == 0) {
+			alert('请先输入查询内容。');
+			return
+		};
+		queue.map(item => {
+			temp.push( item.replace(new RegExp(value,'g'), '<span class="select">' + value + '</span>') );
+		});
+		console.log(temp);
+		clear();
+		render(temp);
+	});
+
+	function render(que) {
+		var htmlFragment, htmlQue;
+
+		htmlFlagment = document.createDocumentFragment();
+		htmlQue = document.querySelectorAll('.queue')[0];
+
+		que.map(item => {
+			let li = document.createElement('li');
+			if (item.indexOf('</span>') >= 0) {
+				li.innerHTML = item;
+			}else{
+				li.textContent = item;
+			}
+			htmlFlagment.appendChild(li);
+		});
+		htmlQue.appendChild(htmlFlagment);
+	};
+
+	function clear(){
+		var htmlQue = document.querySelectorAll('.queue')[0];
+		htmlQue.innerHTML = '';
+	}
+
+	function getValue(){
+		var value = trim(document.querySelectorAll('.batchIn')[0].value);
+		value = value.replace(/(^[^\u4e00-\u9fa5_a-zA-Z0-9]*)|([^\u4e00-\u9fa5_a-zA-Z0-9]*$)/g, '');
+		if (value.length == 0) {
+			alert('请先输入数字。');
+		}else{
+			value = value.replace(/[^\u4e00-\u9fa5_a-zA-Z0-9]+/g, ',');
+			value = value.split(',');
+		}
+		return value;
+	}
+
+	function isArray(value) {
+		return toString.call(value) === '[object Array]';
+	}
+
+	function validateValue(value) {
+		if (value.length == 0) {
+			alert('请先输入数字。');
+			return false;
+		}else if(isArray(value)){
+			return true;
+		}else{
+			return false;
+		}
+	};
+	function trim(value) {
+		return value.replace(/(^\s*)|(\s*$)/g, '');
+	};
+
+
+})();
+
+</script>
+</body>
+</html>

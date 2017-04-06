@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		div{
+			border: 1px solid black;
+			display: -webkit-box;
+			-webkit-box-orient: horizontal;
+			-webkit-box-flex: 1;
+			margin: 20px 10px;
+			background-color: white;
+		}
+		body > div{
+			width: 900px;
+			height: 400px;
+		}
+		.red{
+			background-color:  red;
+		}
+		.blue{
+			background-color:  blue;
+		}
+		.yellow{
+			background-color:  yellow;
+		}
+	</style>
+</head>
+<body>
+<button class="deepTraversal">深度遍历</button>
+<button class="wideTraversal">广度遍历</button>
+<input type="text" class="searchInput"><button class="search">查询</button>
+<button class="deleteChild">删除</button>
+<button class="addChild">增加</button>
+<div class="treeContent"></div>
+<script type="text/javascript">
+(function() {
+	var tree = [{
+			deep: 0,
+			name: 0,
+			children:[{
+				deep: 1,
+				name: 1,
+				children:[{
+					deep: 2,
+					name: 4,
+					children:[]
+				}]
+			},{
+				deep: 1,
+				name: 2,
+				children:[{
+					deep: 2,
+					name: 5,
+					children:[]
+				},{
+					deep: 2,
+					name: 6,
+					children:[]
+				}]
+			},{
+				deep: 1,
+				name: 3,
+				children:[{
+					deep: 2,
+					name: 7,
+					children:[]
+				}]
+			}]
+		}];
+
+
+	function deepTraversal(tree, list) {
+		if (tree && tree.length > 0) {
+			if (!list) {
+				var list = [];
+			};
+			tree.map(item => {
+				console.log(item.name);
+				list.push(item);
+				if (item.children.length > 0) {
+					deepTraversal(item.children, list);
+				};
+			})
+		};
+		return list;
+	}
+	console.log(deepTraversal(tree));
+
+	function wideTraversal(tree, list) {
+		if (tree && tree.length > 0) {
+			if (!list) {
+				var list = [];
+			};
+			var childTree = [];
+			tree.map(item => {
+				console.log(item.name);
+				list.push(item);
+				if (item.children.length > 0) {
+					childTree = childTree.concat(item.children);
+				};
+			});
+			if (childTree.length > 0) {
+				wideTraversal(childTree, list);
+			};
+		};
+		return list;
+	}
+	console.log(wideTraversal(tree));
+	
+
+	function render(tree, parentDom) {
+		if (tree && tree.length > 0) {
+			parentDom ? parentDom : parentDom = document.querySelectorAll('.treeContent')[0];
+			tree.map(item => {
+				var div = document.createElement('div');
+				div.setAttribute('data-deep', item.deep + '-' + item.name);
+				div.textContent = item.deep + '-' + item.name;
+				parentDom.appendChild(div);
+				if (item.children.length > 0) {
+					render(item.children, div);
+				};
+			});
+		};
+	}
+
+	function clear() {
+		parentDom = document.querySelectorAll('.treeContent')[0].innerHTML = '';
+	}
+
+	render(tree);
+
+	var deepTraversalBtn = document.querySelectorAll('.deepTraversal')[0];
+	deepTraversalBtn.addEventListener('click', function() {
+		var list = deepTraversal(tree);
+		console.log(list);
+		animation(list, 500);
+	});
+
+	var wideTraversalBtn = document.querySelectorAll('.wideTraversal')[0];
+	wideTraversalBtn.addEventListener('click', function() {
+		var list = wideTraversal(tree);
+		console.log(list);
+		animation(list, 500);
+	});
+
+	function animation(list, speed, search) {
+		var temp, result = [];
+		setTimeout(function() {
+			temp = list.shift();
+			var div = document.querySelectorAll('div[data-deep]'), i;
+			for(i = 0; i < div.length; i++){
+				div[i].setAttribute('class', div[i].className.replace(/blue|red/g, ''));
+				if (temp && div[i].getAttribute('data-deep') == temp.deep + '-' + temp.name) {
+					div[i].setAttribute('class', div[i].className.concat(' red'));
+					if (search && temp.deep + '-' + temp.name == search) {
+						div[i].setAttribute('class', div[i].className.concat(' blue'));
+						result.push(temp);
+					};
+				};
+				if (temp && search && div[i].getAttribute('data-deep') == search && temp.deep + '-' + temp.name == search) {
+					div[i].setAttribute('class', div[i].className.concat(' blue'));
+				};
+			}
+			if (!temp) {
+				if (search && result.length == 0) {
+					alert('没有相匹配的元素。');
+				};
+				return;
+			};
+			setTimeout(arguments.callee, speed);
+		}, speed);
+	}
+
+	var searchBtn = document.querySelectorAll('.search')[0];
+	searchBtn.addEventListener('click', function() {
+		var value = document.querySelectorAll('.searchInput')[0].value.replace(/(^\s*)|(\s*$)/g, ''),
+			list = deepTraversal(tree), result;
+		animation(list, 500, value);
+	});
+	//选择
+	var treeContent = document.querySelectorAll('.treeContent')[0];
+	treeContent.addEventListener('click', function(e) {
+		var target = e.target, data;
+		if (target.nodeName.toLowerCase() != 'div') {result};
+		data = target.getAttribute('data-deep');
+		data = {
+			deep: data.split('-')[0],
+			name: data.split('-')[1],
+		};
+		
+		var nodeList = document.querySelectorAll('div[data-deep]');
+		for(i = 0; i < nodeList.length; i++){
+			nodeList[i].setAttribute('class', nodeList[i].className.replace(/yellow/g, ''));
+			if (nodeList[i].getAttribute('data-deep') == data.deep + '-' + data.name) {
+				nodeList[i].setAttribute('class', nodeList[i].className.concat(' yellow'));
+			};
+		};
+	});
+	//删除
+	var deleteChildBtn = document.querySelectorAll('.deleteChild')[0];
+	deleteChildBtn.addEventListener('click', function() {
+		var node = getValue();
+		if (!node) {
+			alert('请先选择要删除的位置。');
+			return;
+		};
+		tree = deleteTree(tree, node);
+		clear();
+		render(tree);
+	});
+
+	function getValue() {
+		var nodeList = document.querySelectorAll('div[data-deep]'),
+			node;
+		for(i = 0; i < nodeList.length; i++){
+			var zlass = nodeList[i].getAttribute('class');
+			if ( zlass && zlass.indexOf('yellow') >= 0) {
+				node = nodeList[i].getAttribute('data-deep');
+			};
+		};
+		if (node) {
+			node = {
+				deep: node.split('-')[0],
+				name: node.split('-')[1],
+			};
+		};
+		return node;
+	}
+
+	function deleteTree(tree, node, temp) {
+		if (tree && tree.length > 0) {
+			temp ? temp : temp = [];
+			var current;
+			for(var i = 0; i < tree.length; i++){
+				if (tree[i].deep == node.deep && tree[i].name == node.name) {continue;};
+				console.log(tree[i].name);
+				current = {
+					deep: tree[i].deep,
+					name: tree[i].name,
+					children: [],
+				}
+				temp.push(current);
+				if (tree[i].children.length > 0) {
+					deleteTree(tree[i].children, node, current.children);
+				};
+			}
+		};
+		return temp;
+	}
+
+	//增加
+	var addChildBtn = document.querySelectorAll('.addChild')[0];
+	addChildBtn.addEventListener('click', function() {
+		var node = getValue();
+		if (!node) {
+			alert('请先选择要添加的位置。');
+			return;
+		};
+		tree = addTree(tree, node);
+		clear();
+		render(tree);
+	});
+
+	function addTree(tree, node, temp){
+		if (tree && tree.length > 0) {
+			temp ? temp : temp = [];
+			var current;
+			for(var i = 0; i < tree.length; i++){
+				current = {
+					deep: tree[i].deep,
+					name: tree[i].name,
+					children: [],
+				}
+				if (tree[i].children.length > 0) {
+					addTree(tree[i].children, node, current.children);
+				};
+				if (tree[i].deep == node.deep && tree[i].name == node.name) {
+					current.children.push({
+						deep: tree[i].deep + 1,
+						name: tree[i].name + parseInt(Math.random()*50),
+						children: [],
+					})
+				};
+				temp.push(current);
+			}
+		};
+		return temp;
+	}
+
+
+})()
+	
+
+
+
+
+</script>
+</body>
+</html>
